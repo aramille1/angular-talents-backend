@@ -24,7 +24,7 @@ func InitiateDB() {
 	username := getEnv("MONGODB_USERNAME", "aramille")
 	password := getEnv("MONGODB_PASSWORD", "")
 	cluster := getEnv("MONGODB_CLUSTER", "atdbcluster0.3ynluj2.mongodb.net")
-	dbName := getEnv("MONGODB_DATABASE", "reverse_job_board")
+	dbName := getEnv("MONGODB_DATABASE", "ATDB-cluster")
 
 	var uri string
 
