@@ -137,3 +137,14 @@ func UpdateEngineerByUser(ctx context.Context, userID uuid.UUID, data *domain.Up
 
 	return udpatedEng, nil
 }
+
+func CountEngineers(ctx context.Context) (int64, error) {
+	engCol := db.Database.Collection("engineers")
+	var count int64
+	count, err := engCol.CountDocuments(ctx, bson.D{})
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

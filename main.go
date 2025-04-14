@@ -43,8 +43,12 @@ func main() {
 
 	db.InitiateDB()
 
+	r.Handle("/health", internal.EnhancedHandler(handlers.HandleHealth)).Methods("GET")
+	r.Handle("/email", internal.EnhancedHandler(handlers.HandleEmail)).Methods("GET")
 	r.Handle("/sign-up", internal.EnhancedHandler(handlers.HandleSignUp)).Methods("POST")
-	r.Handle("/login", internal.EnhancedHandler(handlers.HandleLogin)).Methods("POST")
+  r.Handle("/login", internal.EnhancedHandler(handlers.HandleLogin)).Methods("POST")
+	r.Handle("/verify/{userID}/{verificationCode}", internal.EnhancedHandler(handlers.HandleEmailVerify)).Methods("GET")
+  r.Handle("/count", internal.EnhancedHandler(handlers.HandleCount)).Methods("GET")
 
 	authenticatedRoutes := r.NewRoute().Subrouter()
 
