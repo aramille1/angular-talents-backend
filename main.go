@@ -21,13 +21,13 @@ var wg = sync.WaitGroup{}
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
-  }
+}
 
 func main() {
-	_ , error := os.Stat(".env")
+	_, error := os.Stat(".env")
 
 	if !os.IsNotExist(error) {
-	    err := godotenv.Load(".env")
+		err := godotenv.Load(".env")
 
 		if err != nil {
 			log.Fatalf("Error loading .env file")
@@ -43,11 +43,11 @@ func main() {
 	r.Handle("/health", internal.EnhancedHandler(handlers.HandleHealth)).Methods("GET")
 	r.Handle("/email", internal.EnhancedHandler(handlers.HandleEmail)).Methods("GET")
 	r.Handle("/sign-up", internal.EnhancedHandler(handlers.HandleSignUp)).Methods("POST")
-    r.Handle("/login", internal.EnhancedHandler(handlers.HandleLogin)).Methods("POST")
+	r.Handle("/login", internal.EnhancedHandler(handlers.HandleLogin)).Methods("POST")
 	r.Handle("/verify/{userID}/{verificationCode}", internal.EnhancedHandler(handlers.HandleEmailVerify)).Methods("GET")
-    r.Handle("/count", internal.EnhancedHandler(handlers.HandleCount)).Methods("GET")
+	r.Handle("/count", internal.EnhancedHandler(handlers.HandleCount)).Methods("GET")
 
-    authenticatedRoutes := r.NewRoute().Subrouter()
+	authenticatedRoutes := r.NewRoute().Subrouter()
 
 	authenticatedRoutes.Use(middlewares.ValidateAuth)
 	authenticatedRoutes.Handle("/me", internal.EnhancedHandler(handlers.HandleAuthenticatedUserRead)).Methods("GET")
@@ -65,11 +65,11 @@ func main() {
 	membersRoutes.Handle("/engineers/{engineerID}", internal.EnhancedHandler(handlers.HandleEngineerRead)).Methods("GET")
 
 	withCors := cors.New(cors.Options{
-		AllowedOrigins: []string{"https://angulartalents.onrender.com", "https://www.angulartalents.com"},
-		AllowedMethods: []string{"GET","HEAD","OPTIONS","POST","PUT"},
-		AllowedHeaders: []string{"Authorization", "Access-Control-Allow-Headers", "Origin","Accept", "X-Requested-With", "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"},
+		AllowedOrigins:   []string{"https://angulartalents.onrender.com", "https://www.angulartalents.com", "http://localhost:4200"},
+		AllowedMethods:   []string{"GET", "HEAD", "OPTIONS", "POST", "PUT"},
+		AllowedHeaders:   []string{"Authorization", "Access-Control-Allow-Headers", "Origin", "Accept", "X-Requested-With", "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"},
 		AllowCredentials: true,
-		Debug: false,
+		Debug:            false,
 	}).Handler(r)
 
 	fmt.Println("Listening to port 8080")
