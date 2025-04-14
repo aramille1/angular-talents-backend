@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: angular-talents-backend
+    env: docker
+    rootDir: .
+    dockerfilePath: ./Dockerfile
+    region: frankfurt  # Choose your preferred region
+    plan: free  # Or choose a paid plan if needed
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: ENVIRONMENT
+        value: production
+      - key: MONGODB_USERNAME
+        sync: false
+      - key: MONGODB_PASSWORD
+        sync: false
+      - key: MONGODB_CLUSTER
+        sync: false
+      - key: MONGODB_DATABASE
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"
+    buildCommand: ""  # Docker build handles this
+    startCommand: ""  # Docker handles this

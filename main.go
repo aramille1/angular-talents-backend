@@ -5,27 +5,41 @@ import (
 	"angular-talents-backend/handlers"
 	"angular-talents-backend/internal"
 	"angular-talents-backend/middlewares"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
 
 var wg = sync.WaitGroup{}
+var startTime time.Time
 
 func init() {
+	// Load .env file if it exists
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables or defaults")
+	}
+
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
+
+	startTime = time.Now()
 }
 
 func main() {
 	fmt.Println("Create router")
 	r := mux.NewRouter()
 	r.Use(middlewares.RecoverPanic)
+
+	// Add health check endpoint
+	r.HandleFunc("/health", handleHealthCheck).Methods("GET")
 
 	db.InitiateDB()
 
@@ -59,6 +73,36 @@ func main() {
 		OptionsSuccessStatus: 200,
 	}).Handler(r)
 
-	fmt.Println("Listening to port 3000")
-	http.ListenAndServe(":3000", withCors)
+	// Get port from environment variable, default to 3000
+	port := getEnv("PORT", "3000")
+
+	fmt.Printf("Listening on port %s\n", port)
+	http.ListenAndServe(":"+port, withCors)
+}
+
+// Health check handler for monitoring
+func handleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Create health check response
+	response := map[string]interface{}{
+		"status":      "ok",
+		"uptime":      time.Since(startTime).String(),
+		"version":     "1.0.0",
+		"environment": getEnv("ENVIRONMENT", "development"),
+		"timestamp":   time.Now().Format(time.RFC3339),
+	}
+
+	// Write response
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// Helper function to get environment variables with a default value
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
