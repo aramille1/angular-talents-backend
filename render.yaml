@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: angular-talents-backend
+    runtime: go
+    plan: free
+    region: frankfurt
+    buildCommand: go build -o app
+    startCommand: ./app
+    envVars:
+      - key: MONGO_DB_ACCOUNT
+        sync: false
+      - key: MONGO_DB_PASS
+        sync: false
