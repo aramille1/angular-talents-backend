@@ -11,9 +11,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError{
+func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
 	internal.LogInfo("Starting sign up", nil)
-	confirmEmailTemplateId := os.Getenv("CONFIRM_EMAIL_TEMPLATE_ID")
 	var userData domain.SignUpData
 	err := r.DecodeJSON(&w, &userData)
 	if err != nil {
@@ -36,17 +35,23 @@ func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest
 		return internal.NewError(http.StatusBadRequest, "signup.validate_user", "failed to sign up", err.Error())
 	}
 
+	// For development: auto-verify users if no Mailgun credentials are present
+	if os.Getenv("MAILGUN_API_KEY") == "" || os.Getenv("MAILGUN_DOMAIN") == "" {
+		user.Verified = true
+	}
+
 	userId, err := dao.InsertNewUser(r.Context(), user)
 	if err != nil {
 		return internal.NewError(http.StatusInternalServerError, "signup.insert_user", "failed to sign up", err.Error())
 	}
 
-	err = domain.SendNewEmail(confirmEmailTemplateId, userId, user.Email, user.VerificationCode)
+	// Send verification email
+	err = domain.SendNewEmail("", userId, user.Email, user.VerificationCode)
 	if err != nil {
 		return internal.NewError(http.StatusInternalServerError, "signup.send_confirmation_email", "failed to sign up", err.Error())
 	}
 
-	internal.LogInfo("Successfully signed up user", map[string]interface{}{"user_id": user.ID })
+	internal.LogInfo("Successfully signed up user", map[string]interface{}{"user_id": user.ID})
 	w.WriteResponse(http.StatusOK, map[string]uuid.UUID{"user_id": user.ID})
 	return nil
 }
