@@ -17,25 +17,27 @@ import (
 )
 
 type User struct {
-	ID uuid.UUID 			`bson:"_id,required"`
-	Email string			`bson:"email,required"`
-	Password string			`bson:"password,required"`
-	Verified bool			`bson:"verified,omitempty"`
-	VerificationCode int	`bson:"verificationCode,omitempty"`
+	ID               uuid.UUID `bson:"_id,required"`
+	Email            string    `bson:"email,required"`
+	Password         string    `bson:"password,required"`
+	Verified         bool      `bson:"verified,omitempty"`
+	VerificationCode int       `bson:"verificationCode,omitempty"`
 }
 
 type BodyData struct {
-	Email string		`json:"email" validate:"required,email"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 type SignUpData struct {
 	BodyData
-	Password string		`json:"password" validate:"required,min=8,max=20"`
+	Password       string `json:"password" validate:"required,min=8,max=20"`
+	RecaptchaToken string `json:"recaptchaToken" validate:"required"`
+	Interests      string `json:"interests,omitempty"` // Honeypot field
 }
 
 type LoginData struct {
 	BodyData
-	Password string		`json:"password" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type JwtCustomClaims struct {
@@ -47,25 +49,25 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 func (d *SignUpData) NewUser() (*User, error) {
 	newUser := &User{
-		Email: d.Email,
-		Verified: false,
+		Email:            d.Email,
+		Verified:         false,
 		VerificationCode: rand.Intn(10000000),
 	}
-	
+
 	err := newUser.generateID()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	err = newUser.hashPassword(d.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	 return newUser, nil
+	return newUser, nil
 }
 
-func (u *User) hashPassword(givenPassword string) (error) {
+func (u *User) hashPassword(givenPassword string) error {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(givenPassword), 14)
 	if err != nil {
 		return err
@@ -74,9 +76,9 @@ func (u *User) hashPassword(givenPassword string) (error) {
 	return nil
 }
 
-func (u *User) generateID() (error) {
+func (u *User) generateID() error {
 	userHash := md5.Sum([]byte(u.Email))
-	userID, err := uuid.FromBytes(userHash[:]);
+	userID, err := uuid.FromBytes(userHash[:])
 	if err != nil {
 		return err
 	}
@@ -110,7 +112,7 @@ func (u *User) checkAlreadyCreated(ctx context.Context) (bool, error) {
 
 func (ld *LoginData) VerifyLogin(ctx context.Context) (*User, error) {
 	user, err := ld.checkExists(ctx)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -123,7 +125,7 @@ func (ld *LoginData) VerifyLogin(ctx context.Context) (*User, error) {
 	return user, nil
 }
 
-func (ld *LoginData) verifyPassword(storedPassword string) (error) {
+func (ld *LoginData) verifyPassword(storedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(ld.Password))
 	if err != nil {
 		return err
@@ -134,16 +136,16 @@ func (ld *LoginData) verifyPassword(storedPassword string) (error) {
 
 func GenerateJWT(userID uuid.UUID) (string, error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
-	claims:= &JwtCustomClaims{
+	claims := &JwtCustomClaims{
 		UserID: userID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtSecret)
-	if err!= nil {
+	if err != nil {
 		return "", err
 	}
 	return tokenString, nil
@@ -157,7 +159,7 @@ func ValidateToken(signedToken string) (uuid.UUID, error) {
 			return []byte(jwtSecret), nil
 		},
 	)
-	
+
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -166,7 +168,7 @@ func ValidateToken(signedToken string) (uuid.UUID, error) {
 		return uuid.Nil, errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(*JwtCustomClaims);
+	claims, ok := token.Claims.(*JwtCustomClaims)
 
 	if !ok || !token.Valid {
 		return uuid.Nil, errors.New("failed to extract claims")
@@ -190,6 +192,6 @@ func (ld *LoginData) checkExists(ctx context.Context) (*User, error) {
 		}
 		return nil, err
 	}
-	
+
 	return &user, nil
 }
