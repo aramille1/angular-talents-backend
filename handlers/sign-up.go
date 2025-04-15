@@ -11,39 +11,50 @@ import (
 	"github.com/google/uuid"
 )
 
+// SignUpRequest combines user data with honeypot field
+type SignUpRequest struct {
+	domain.SignUpData
+	// Email2 is a honeypot field that should remain empty
+	Email2 string `json:"email2"`
+}
+
 func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
 	internal.LogInfo("Starting sign up", nil)
 	confirmEmailTemplateId := os.Getenv("CONFIRM_EMAIL_TEMPLATE_ID")
-	var userData domain.SignUpData
-	err := r.DecodeJSON(&w, &userData)
+
+	// Decode the full request with both user data and honeypot
+	var signupRequest SignUpRequest
+	err := r.DecodeJSON(&w, &signupRequest)
 	if err != nil {
 		return internal.NewError(http.StatusInternalServerError, "signup.decode_body", "failed to sign up", err.Error())
 	}
 
-	// Honeypot check - if interests field is filled, it's likely a bot
-	if userData.Interests != "" {
-		// Return a 200 OK response to make the bot think the signup was successful
-		// but don't actually create an account
-		internal.LogInfo("Honeypot detected bot attempt", nil)
-		w.WriteResponse(http.StatusOK, map[string]string{"status": "success"})
+	// Check honeypot field - if it's filled, it's likely a bot
+	if signupRequest.Email2 != "" {
+		// Return success response to not alert the bot, but don't proceed with registration
+		internal.LogInfo("Honeypot triggered, likely bot", nil)
+		w.WriteResponse(http.StatusOK, map[string]string{"message": "Check your email for verification instructions"})
 		return nil
 	}
 
-	// Verify reCAPTCHA token
-	recaptchaResponse, err := domain.VerifyRecaptcha(userData.RecaptchaToken)
-	if err != nil {
-		return internal.NewError(http.StatusBadRequest, "signup.recaptcha_verification", "failed to sign up", err.Error())
-	}
+	// Extract the user data part
+	userData := signupRequest.SignUpData
 
-	// Check if the score indicates a human user
-	if !recaptchaResponse.Success || !domain.IsHumanScore(recaptchaResponse.Score) {
-		return internal.NewError(http.StatusBadRequest, "signup.recaptcha_score", "failed to sign up", "reCAPTCHA verification failed")
-	}
-
+	// Validate form data
 	v := validator.New()
 	err = v.Struct(userData)
 	if err != nil {
 		return internal.NewError(http.StatusBadRequest, "signup.validate_body", "failed to sign up", err.Error())
+	}
+
+	// Verify reCAPTCHA token
+	recaptchaValid, err := internal.VerifyRecaptcha(userData.RecaptchaToken)
+	if err != nil {
+		return internal.NewError(http.StatusBadRequest, "signup.verify_recaptcha", "failed to sign up", err.Error())
+	}
+
+	if !recaptchaValid {
+		return internal.NewError(http.StatusBadRequest, "signup.invalid_recaptcha", "failed to sign up", "Invalid reCAPTCHA")
 	}
 
 	user, err := userData.NewUser()

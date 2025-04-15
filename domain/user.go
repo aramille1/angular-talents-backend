@@ -32,7 +32,7 @@ type SignUpData struct {
 	BodyData
 	Password       string `json:"password" validate:"required,min=8,max=20"`
 	RecaptchaToken string `json:"recaptchaToken" validate:"required"`
-	Interests      string `json:"interests,omitempty"` // Honeypot field
+	// Honeypot field won't be included here since it's meant to be hidden
 }
 
 type LoginData struct {
