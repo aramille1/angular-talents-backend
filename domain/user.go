@@ -30,9 +30,9 @@ type BodyData struct {
 
 type SignUpData struct {
 	BodyData
-	Password       string `json:"password" validate:"required,min=8,max=20"`
-	RecaptchaToken string `json:"recaptchaToken" validate:"required"`
-	// Honeypot field won't be included here since it's meant to be hidden
+	Password          string `json:"password" validate:"required,min=8,max=20"`
+	RecaptchaResponse string `json:"recaptchaResponse" validate:"required"`
+	Website           string `json:"website"` // honeypot field - should be empty
 }
 
 type LoginData struct {
