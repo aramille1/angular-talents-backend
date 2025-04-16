@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+Dockerfile
+.dockerignore
+
+# Environment variables
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Build and test artifacts
+*.exe
+*.test
+*.prof
+
+# Temporary files
+tmp/
+temp/

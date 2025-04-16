@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: angular-talents-backend
+    runtime: docker
+    plan: free
+    repo: https://github.com/aramille1/angular-talents-backend
+    branch: main
+    buildFilter:
+      paths:
+        - "**/*.go"
+        - "go.mod"
+        - "go.sum"
+        - "Dockerfile"
+    envVars:
+      - key: MONGODB_USERNAME
+        sync: false
+      - key: MONGODB_PASSWORD
+        sync: false
+      - key: MONGODB_CLUSTER
+        sync: false
+      - key: MONGODB_DATABASE
+        sync: false
+      - key: MAILTRAP_TOKEN
+        sync: false
+      - key: CONFIRM_EMAIL_TEMPLATE_ID
+        sync: false
+      - key: RECAPTCHA_SITE_KEY
+        sync: false
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
