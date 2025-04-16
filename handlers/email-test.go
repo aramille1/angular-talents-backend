@@ -9,34 +9,32 @@ import (
 	"reverse-job-board/internal"
 )
 
-
 type FromStruct struct {
-	Email string 	`json:"email"`
-	Name string 	`json:"name"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 type Email struct {
-	From FromStruct 	`json:"from"`
-
+	From FromStruct `json:"from"`
 }
 
 func HandleEmail(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
 	internal.LogInfo("TestEmail", map[string]interface{}{"emailtest": "OK"})
-	
+
 	requestBody := map[string]interface{}{
 		"from": map[string]string{
 			"email": "hello@angulartalents.com",
-			"name": "Mailtrap Test",
+			"name":  "Mailtrap Test",
 		},
 		"to": []interface{}{
-			map[string]string{"email": "martin.axe@live.fr"},
+			map[string]string{"email": "aramille@gmail.com"},
 		},
 		"template_uuid": "269c54d2-872f-45be-aa5f-96584c1e40cd",
 		"template_variables": map[string]string{
-				"user_name": "Bob",			
-			},
+			"user_name": "Bob",
+		},
 	}
 
-	client := &http.Client {}
+	client := &http.Client{}
 	url := "https://send.api.mailtrap.io/api/send"
 
 	marshalledRequestBody, err := json.Marshal(requestBody)
@@ -54,7 +52,7 @@ func HandleEmail(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest)
 	mailTrapToken := os.Getenv("MAILTRAP_TOKEN")
 	req.Header.Add("Authorization", "Bearer "+mailTrapToken)
 	req.Header.Add("Content-Type", "application/json")
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)

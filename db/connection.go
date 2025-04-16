@@ -20,8 +20,8 @@ func InitiateDB() {
 	dbName := getEnv("MONGODB_DATABASE", "ATDB-cluster")
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=ATDBCluster0", username,
-	password,
-	cluster)
+		password,
+		cluster)
 	clientOptions := options.Client().
 		ApplyURI(uri).
 		SetServerAPIOptions(serverAPIOptions)
@@ -58,6 +58,7 @@ func InitiateDB() {
 
 	fmt.Println("Successfully connected database")
 }
+
 // getEnv gets an environment variable or returns a default value
 func getEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
