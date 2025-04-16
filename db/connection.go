@@ -18,28 +18,13 @@ func InitiateDB() {
 	password := getEnv("MONGODB_PASSWORD", "")
 	cluster := getEnv("MONGODB_CLUSTER", "atdbcluster0.3ynluj2.mongodb.net")
 	dbName := getEnv("MONGODB_DATABASE", "ATDB-cluster")
-
-	// Check if we should use a local DB for development
-	useLocalDB := os.Getenv("USE_LOCAL_DB")
-
-	var clientOptions *options.ClientOptions
-
-	if useLocalDB == "true" {
-		// Use local MongoDB for testing
-		fmt.Println("Using local MongoDB for testing")
-		uri := "mongodb://localhost:27017"
-		clientOptions = options.Client().ApplyURI(uri)
-	} else {
-		// Use MongoDB Atlas
-		serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
-		uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=ATDBCluster0",
-			username,
-			password,
-			cluster)
-		clientOptions = options.Client().
-			ApplyURI(uri).
-			SetServerAPIOptions(serverAPIOptions)
-	}
+	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=ATDBCluster0", username,
+		password,
+		cluster)
+	clientOptions := options.Client().
+		ApplyURI(uri).
+		SetServerAPIOptions(serverAPIOptions)
 
 	clientOptions.SetServerSelectionTimeout(5 * time.Second)
 	client, err := mongo.NewClient(clientOptions)
