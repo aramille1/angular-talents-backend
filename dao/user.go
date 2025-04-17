@@ -70,7 +70,7 @@ func FindUserById(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
 	return &user, nil
 }
 
-func UpdateUserVerifiedStatus(ctx context.Context, userID string) (error)  {
+func UpdateUserVerifiedStatus(ctx context.Context, userID string) error {
 	userCol := db.Database.Collection("users")
 
 	parsedUserID, err := uuid.Parse(userID)
@@ -79,10 +79,34 @@ func UpdateUserVerifiedStatus(ctx context.Context, userID string) (error)  {
 	}
 
 	type UpdateUserPayload struct {
-		Verified bool	`bson:"verified,omitempty"`
+		Verified bool `bson:"verified,omitempty"`
 	}
-	
-	data := &UpdateUserPayload{ Verified: true}
-	 userCol.FindOneAndUpdate(ctx, bson.M{"_id": parsedUserID}, bson.M{"$set": data}, options.FindOneAndUpdate())
+
+	data := &UpdateUserPayload{Verified: true}
+	result := userCol.FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": parsedUserID},
+		bson.M{"$set": data},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+
+	// Check if the update was successful
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return errors.New("user not found")
+		}
+		return result.Err()
+	}
+
+	// Verify that the user was actually updated
+	var updatedUser domain.User
+	if err := result.Decode(&updatedUser); err != nil {
+		return err
+	}
+
+	if !updatedUser.Verified {
+		return errors.New("failed to update user verified status")
+	}
+
 	return nil
 }
