@@ -19,6 +19,7 @@ func InitiateDB() {
 	cluster := getEnv("MONGODB_CLUSTER", "atdbcluster0.3ynluj2.mongodb.net")
 	dbName := getEnv("MONGODB_DATABASE", "ATDB-cluster")
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+	// uri := "mongodb://localhost:3000"
 	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=ATDBCluster0", username,
 		password,
 		cluster)
