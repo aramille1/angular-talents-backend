@@ -13,29 +13,30 @@ import (
 	"github.com/google/uuid"
 )
 
-// RecaptchaResponse represents the response from Google's reCAPTCHA verification API
-type RecaptchaResponse struct {
+// HCaptchaResponse represents the response from hCaptcha verification API
+type HCaptchaResponse struct {
 	Success     bool     `json:"success"`
-	Score       float64  `json:"score"`
-	Action      string   `json:"action"`
 	ChallengeTS string   `json:"challenge_ts"`
 	Hostname    string   `json:"hostname"`
+	Credit      bool     `json:"credit"`
 	ErrorCodes  []string `json:"error-codes,omitempty"`
 }
 
-func verifyRecaptcha(recaptchaResponse string) (bool, error) {
-	recaptchaSecretKey := os.Getenv("RECAPTCHA_SECRET_KEY")
+func verifyHCaptcha(hCaptchaToken string) (bool, error) {
+	// Get the secret key from environment variables
+	hCaptchaSecret := os.Getenv("HCAPTCHA_SECRET_KEY")
 
 	// If no secret key is set, skip verification in development
-	if recaptchaSecretKey == "" {
-		internal.LogInfo("No reCAPTCHA secret key set, skipping verification", nil)
+	if hCaptchaSecret == "" {
+		internal.LogInfo("No hCaptcha secret key set, skipping verification", nil)
 		return true, nil
 	}
 
-	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
+	// Make a verification request to the hCaptcha API
+	resp, err := http.PostForm("https://hcaptcha.com/siteverify",
 		url.Values{
-			"secret":   {recaptchaSecretKey},
-			"response": {recaptchaResponse},
+			"secret":   {hCaptchaSecret},
+			"response": {hCaptchaToken},
 		})
 
 	if err != nil {
@@ -43,7 +44,8 @@ func verifyRecaptcha(recaptchaResponse string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	var result RecaptchaResponse
+	// Parse the response
+	var result HCaptchaResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		return false, err
@@ -73,14 +75,14 @@ func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest
 		return internal.NewError(http.StatusBadRequest, "signup.honeypot", "failed to sign up", "bot detected")
 	}
 
-	// Verify reCAPTCHA
-	recaptchaValid, err := verifyRecaptcha(userData.RecaptchaResponse)
+	// Verify hCaptcha
+	hCaptchaValid, err := verifyHCaptcha(userData.HCaptchaToken)
 	if err != nil {
-		return internal.NewError(http.StatusInternalServerError, "signup.validate_recaptcha", "failed to sign up", err.Error())
+		return internal.NewError(http.StatusInternalServerError, "signup.validate_hcaptcha", "failed to sign up", err.Error())
 	}
 
-	if !recaptchaValid {
-		return internal.NewError(http.StatusBadRequest, "signup.validate_recaptcha", "failed to sign up", "invalid recaptcha")
+	if !hCaptchaValid {
+		return internal.NewError(http.StatusBadRequest, "signup.validate_hcaptcha", "failed to sign up", "invalid hCaptcha")
 	}
 
 	user, err := userData.NewUser()
