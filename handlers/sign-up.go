@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
-	"net/url"
 	"os"
 	"reverse-job-board/dao"
 	"reverse-job-board/domain"
@@ -12,47 +10,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
-
-// HCaptchaResponse represents the response from hCaptcha verification API
-type HCaptchaResponse struct {
-	Success     bool     `json:"success"`
-	ChallengeTS string   `json:"challenge_ts"`
-	Hostname    string   `json:"hostname"`
-	Credit      bool     `json:"credit"`
-	ErrorCodes  []string `json:"error-codes,omitempty"`
-}
-
-func verifyHCaptcha(hCaptchaToken string) (bool, error) {
-	// Get the secret key from environment variables
-	hCaptchaSecret := os.Getenv("HCAPTCHA_SECRET_KEY")
-
-	// If no secret key is set, skip verification in development
-	if hCaptchaSecret == "" {
-		internal.LogInfo("No hCaptcha secret key set, skipping verification", nil)
-		return true, nil
-	}
-
-	// Make a verification request to the hCaptcha API
-	resp, err := http.PostForm("https://hcaptcha.com/siteverify",
-		url.Values{
-			"secret":   {hCaptchaSecret},
-			"response": {hCaptchaToken},
-		})
-
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-
-	// Parse the response
-	var result HCaptchaResponse
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return false, err
-	}
-
-	return result.Success, nil
-}
 
 func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
 	internal.LogInfo("Starting sign up", nil)
@@ -73,16 +30,6 @@ func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest
 	if userData.Website != "" {
 		internal.LogInfo("Honeypot trap triggered", map[string]interface{}{"honeypot_value": userData.Website})
 		return internal.NewError(http.StatusBadRequest, "signup.honeypot", "failed to sign up", "bot detected")
-	}
-
-	// Verify hCaptcha
-	hCaptchaValid, err := verifyHCaptcha(userData.HCaptchaToken)
-	if err != nil {
-		return internal.NewError(http.StatusInternalServerError, "signup.validate_hcaptcha", "failed to sign up", err.Error())
-	}
-
-	if !hCaptchaValid {
-		return internal.NewError(http.StatusBadRequest, "signup.validate_hcaptcha", "failed to sign up", "invalid hCaptcha")
 	}
 
 	user, err := userData.NewUser()

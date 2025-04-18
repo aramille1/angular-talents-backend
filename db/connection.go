@@ -14,18 +14,35 @@ import (
 var Database *mongo.Database
 
 func InitiateDB() {
-	username := getEnv("MONGODB_USERNAME", "aramille")
-	password := getEnv("MONGODB_PASSWORD", "")
-	cluster := getEnv("MONGODB_CLUSTER", "atdbcluster0.3ynluj2.mongodb.net")
-	dbName := getEnv("MONGODB_DATABASE", "ATDB-cluster")
-	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
-	// uri := "mongodb://localhost:3000"
-	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=ATDBCluster0", username,
-		password,
-		cluster)
-	clientOptions := options.Client().
-		ApplyURI(uri).
-		SetServerAPIOptions(serverAPIOptions)
+	// Check if local MongoDB should be used
+	useLocalDB := os.Getenv("USE_LOCAL_DB")
+
+	var clientOptions *options.ClientOptions
+	var dbName string
+
+	if useLocalDB == "true" {
+		// Use local MongoDB for development/testing
+		fmt.Println("Using local MongoDB instance")
+		uri := "mongodb://localhost:27017"
+		clientOptions = options.Client().ApplyURI(uri)
+		dbName = "angular-talents"
+	} else {
+		// Use MongoDB Atlas for production
+		username := getEnv("MONGODB_USERNAME", "aramille")
+		password := getEnv("MONGODB_PASSWORD", "")
+		cluster := getEnv("MONGODB_CLUSTER", "atdbcluster0.3ynluj2.mongodb.net")
+		dbName = getEnv("MONGODB_DATABASE", "ATDB-cluster")
+
+		fmt.Println("Using MongoDB Atlas")
+		serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+		uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=ATDBCluster0",
+			username,
+			password,
+			cluster)
+		clientOptions = options.Client().
+			ApplyURI(uri).
+			SetServerAPIOptions(serverAPIOptions)
+	}
 
 	clientOptions.SetServerSelectionTimeout(5 * time.Second)
 	client, err := mongo.NewClient(clientOptions)
