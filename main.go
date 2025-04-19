@@ -65,7 +65,7 @@ func main() {
 	membersRoutes.Handle("/engineers/{engineerID}", internal.EnhancedHandler(handlers.HandleEngineerRead)).Methods("GET")
 
 	withCors := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://angulartalents.onrender.com", "https://www.angulartalents.com", "https://angulartalents.com", "http://localhost:4200"},
+		AllowedOrigins:   []string{"https://angulartalents.onrender.com", "https://www.angulartalents.com", "http://localhost:4200"},
 		AllowedMethods:   []string{"GET", "HEAD", "OPTIONS", "POST", "PUT"},
 		AllowedHeaders:   []string{"Authorization", "Access-Control-Allow-Headers", "Origin", "Accept", "X-Requested-With", "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"},
 		AllowCredentials: true,
