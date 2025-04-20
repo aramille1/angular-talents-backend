@@ -24,9 +24,5 @@ services:
         sync: false
       - key: CONFIRM_EMAIL_TEMPLATE_ID
         sync: false
-      - key: RECAPTCHA_SITE_KEY
-        sync: false
-      - key: RECAPTCHA_SECRET_KEY
-        sync: false
       - key: JWT_SECRET
         sync: false
