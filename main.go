@@ -46,7 +46,6 @@ func main() {
 	r.Handle("/login", internal.EnhancedHandler(handlers.HandleLogin)).Methods("POST")
 	r.Handle("/verify/{userID}/{verificationCode}", internal.EnhancedHandler(handlers.HandleEmailVerify)).Methods("GET")
 	r.Handle("/count", internal.EnhancedHandler(handlers.HandleCount)).Methods("GET")
-	r.Handle("/countries", internal.EnhancedHandler(handlers.HandleCountries)).Methods("GET")
 
 	authenticatedRoutes := r.NewRoute().Subrouter()
 
