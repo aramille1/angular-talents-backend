@@ -47,6 +47,9 @@ func main() {
 	r.Handle("/verify/{userID}/{verificationCode}", internal.EnhancedHandler(handlers.HandleEmailVerify)).Methods("GET")
 	r.Handle("/count", internal.EnhancedHandler(handlers.HandleCount)).Methods("GET")
 
+	// Admin routes
+	r.Handle("/api/admin/login", internal.EnhancedHandler(handlers.HandleAdminLogin)).Methods("POST")
+
 	authenticatedRoutes := r.NewRoute().Subrouter()
 
 	authenticatedRoutes.Use(middlewares.ValidateAuth)
