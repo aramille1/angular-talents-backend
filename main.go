@@ -50,6 +50,16 @@ func main() {
 	// Admin routes
 	r.Handle("/api/admin/login", internal.EnhancedHandler(handlers.HandleAdminLogin)).Methods("POST")
 
+	// Admin authenticated routes
+	adminRoutes := r.NewRoute().Subrouter()
+	adminRoutes.Use(middlewares.ValidateAuth) // This should be replaced with a proper admin auth middleware in production
+
+	// Route to get all recruiters
+	adminRoutes.Handle("/recruiters", internal.EnhancedHandler(handlers.HandleRecruiterList)).Methods("GET")
+
+	// Route to update recruiter status
+	adminRoutes.Handle("/recruiters/{recruiterID}/status", internal.EnhancedHandler(handlers.HandleRecruiterUpdateStatus)).Methods("PATCH")
+
 	authenticatedRoutes := r.NewRoute().Subrouter()
 
 	authenticatedRoutes.Use(middlewares.ValidateAuth)

@@ -101,3 +101,23 @@ func UpdateRecruiterByUser(ctx context.Context, userID uuid.UUID, data *domain.U
 
 	return updatedRecruiter, nil
 }
+
+// ReadAllRecruiters retrieves all recruiters from the database
+func ReadAllRecruiters(ctx context.Context) ([]*domain.Recruiter, error) {
+	recruiterCol := db.Database.Collection("recruiters")
+
+	// Create a cursor for all recruiters
+	cursor, err := recruiterCol.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Decode all recruiters
+	var recruiters []*domain.Recruiter
+	if err = cursor.All(ctx, &recruiters); err != nil {
+		return nil, err
+	}
+
+	return recruiters, nil
+}
