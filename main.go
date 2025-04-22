@@ -40,6 +40,16 @@ func main() {
 
 	db.InitiateDB()
 
+	// Create a completely separate adminski router
+	adminskiRouter := r.PathPrefix("/adminski").Subrouter()
+	// Add auth middleware to protect all adminski routes
+	adminskiRouter.Use(middlewares.ValidateAuth) // Should be replaced with proper admin auth in production
+
+	// Adminski routes for recruiters
+	adminskiRouter.Handle("/recruiters", internal.EnhancedHandler(handlers.HandleRecruiterList)).Methods("GET")
+	adminskiRouter.Handle("/recruiters/{recruiterID}/status", internal.EnhancedHandler(handlers.HandleRecruiterUpdateStatus)).Methods("PATCH")
+
+	// Regular API routes
 	r.Handle("/health", internal.EnhancedHandler(handlers.HandleHealth)).Methods("GET")
 	r.Handle("/email", internal.EnhancedHandler(handlers.HandleEmail)).Methods("GET")
 	r.Handle("/sign-up", internal.EnhancedHandler(handlers.HandleSignUp)).Methods("POST")
@@ -47,18 +57,8 @@ func main() {
 	r.Handle("/verify/{userID}/{verificationCode}", internal.EnhancedHandler(handlers.HandleEmailVerify)).Methods("GET")
 	r.Handle("/count", internal.EnhancedHandler(handlers.HandleCount)).Methods("GET")
 
-	// Admin routes
+	// Admin login route
 	r.Handle("/api/admin/login", internal.EnhancedHandler(handlers.HandleAdminLogin)).Methods("POST")
-
-	// Admin authenticated routes
-	adminRoutes := r.NewRoute().Subrouter()
-	adminRoutes.Use(middlewares.ValidateAuth) // This should be replaced with a proper admin auth middleware in production
-
-	// Route to get all recruiters
-	adminRoutes.Handle("/recruiters", internal.EnhancedHandler(handlers.HandleRecruiterList)).Methods("GET")
-
-	// Route to update recruiter status
-	adminRoutes.Handle("/recruiters/{recruiterID}/status", internal.EnhancedHandler(handlers.HandleRecruiterUpdateStatus)).Methods("PATCH")
 
 	authenticatedRoutes := r.NewRoute().Subrouter()
 
@@ -79,7 +79,7 @@ func main() {
 
 	withCors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"https://angulartalents.onrender.com", "https://www.angulartalents.com", "http://localhost:4200"},
-		AllowedMethods:   []string{"GET", "HEAD", "OPTIONS", "POST", "PUT"},
+		AllowedMethods:   []string{"GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH"}, // Added PATCH for status updates
 		AllowedHeaders:   []string{"Authorization", "Access-Control-Allow-Headers", "Origin", "Accept", "X-Requested-With", "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"},
 		AllowCredentials: true,
 		Debug:            false,
