@@ -42,8 +42,8 @@ func main() {
 
 	// Create a completely separate adminski router
 	adminskiRouter := r.PathPrefix("/adminski").Subrouter()
-	// Add auth middleware to protect all adminski routes
-	adminskiRouter.Use(middlewares.ValidateAuth) // Should be replaced with proper admin auth in production
+	// Add admin auth middleware to protect all adminski routes
+	adminskiRouter.Use(middlewares.ValidateAdminAuth) // Use admin-specific auth middleware
 
 	// Adminski routes for recruiters
 	adminskiRouter.Handle("/recruiters", internal.EnhancedHandler(handlers.HandleRecruiterList)).Methods("GET")
