@@ -10,10 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
-
 func HandleRecruiterCreate(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
 	var recruiterPayload domain.CreateRecruiterPayload
-	internal.LogInfo("Starting recruiter creation for user", map[string]interface{}{"user_id": r.Context().Value("userID") })
+	internal.LogInfo("Starting recruiter creation for user", map[string]interface{}{"user_id": r.Context().Value("userID")})
 
 	err := r.DecodeJSON(&w, &recruiterPayload)
 	if err != nil {
@@ -40,6 +39,24 @@ func HandleRecruiterCreate(w internal.EnhancedResponseWriter, r *internal.Enhanc
 	if err != nil {
 		return internal.NewError(http.StatusInternalServerError, "recruiter.create.insert", "failed to create new recruiter", err.Error())
 	}
+
+	// Send notification to Slack about the new recruiter that needs approval
+	go func() {
+		// Use goroutine to not block the main request flow
+		notifyErr := internal.NotifyNewRecruiter(
+			recruiter.ID.String(),
+			recruiter.Company,
+			recruiter.Firstname,
+			recruiter.Lastname,
+			"", // Email isn't part of the recruiter struct, would need to fetch from user collection
+		)
+		if notifyErr != nil {
+			internal.LogInfo("Failed to send Slack notification", map[string]interface{}{
+				"recruiterId": recruiter.ID,
+				"error":       notifyErr.Error(),
+			})
+		}
+	}()
 
 	internal.LogInfo("Successfully created new recruiter", map[string]interface{}{"recruiterId": recruiter.ID})
 	w.WriteResponse(http.StatusOK, map[string]uuid.UUID{"recruiterId": recruiter.ID})
