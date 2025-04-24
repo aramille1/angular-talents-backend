@@ -50,8 +50,11 @@ func NotifyNewRecruiter(recruiterId string, companyName, firstName, lastName, em
 	}
 
 	// Create the Slack message
+	now := time.Now()
+	formattedTime := now.Format("15:04 - 02 Jan 2006")
+
 	message := SlackMessage{
-		Text: "🚨 *New Business Profile Created - Needs Approval*",
+		Text: fmt.Sprintf("🚨 *New Business Profile Created - Needs Approval - %s*", formattedTime),
 		Attachments: []Attachment{
 			{
 				Color: "#36a64f",
