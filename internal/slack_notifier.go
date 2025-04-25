@@ -51,7 +51,13 @@ func NotifyNewRecruiter(recruiterId string, companyName, firstName, lastName, em
 
 	// Create the Slack message
 	now := time.Now()
-	formattedTime := now.Format("15:04 - 02 Jan 2006")
+	berlinLocation, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		// Fallback to UTC+1 if the location is not available
+		berlinLocation = time.FixedZone("Berlin", 3600)
+	}
+	berlinTime := now.In(berlinLocation)
+	formattedTime := berlinTime.Format("15:04 - 02 Jan 2006")
 
 	message := SlackMessage{
 		Text: fmt.Sprintf("🚨 *New Business Profile Created - Needs Approval - %s*", formattedTime),
