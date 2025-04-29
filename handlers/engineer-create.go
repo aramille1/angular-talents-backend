@@ -12,7 +12,7 @@ import (
 
 func HandleEngineerCreate(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
 	var engPayload domain.CreateEngineerPayload
-	internal.LogInfo("Starting engineer creation for user", map[string]interface{}{"user_id": r.Context().Value("userID") })
+	internal.LogInfo("Starting engineer creation for user", map[string]interface{}{"user_id": r.Context().Value("userID")})
 
 	err := r.DecodeJSON(&w, &engPayload)
 	if err != nil {
@@ -41,6 +41,10 @@ func HandleEngineerCreate(w internal.EnhancedResponseWriter, r *internal.Enhance
 	}
 
 	internal.LogInfo("Successfully created new engineer", map[string]interface{}{"engineerId": eng.ID})
+
+	// Send Slack notification (non-blocking)
+	go internal.NotifyNewEngineerProfile(eng.Firstname, eng.Lastname, eng.ID.String())
+
 	w.WriteResponse(http.StatusOK, map[string]uuid.UUID{"engineerId": eng.ID})
 	return nil
 }

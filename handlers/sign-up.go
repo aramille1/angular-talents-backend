@@ -8,7 +8,6 @@ import (
 	"reverse-job-board/internal"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 )
 
 func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest) *internal.CustomError {
@@ -53,6 +52,10 @@ func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest
 	}
 
 	internal.LogInfo("Successfully signed up user", map[string]interface{}{"user_id": user.ID})
-	w.WriteResponse(http.StatusOK, map[string]uuid.UUID{"user_id": user.ID})
+
+	// Send Slack notification (non-blocking)
+	go internal.NotifyNewUserRegistration(user.Email, user.ID.String())
+
+	w.WriteResponse(http.StatusOK, map[string]domain.User{"user": *user})
 	return nil
 }
