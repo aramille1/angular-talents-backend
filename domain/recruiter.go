@@ -15,61 +15,60 @@ import (
 )
 
 type Recruiter struct {
-	ID uuid.UUID 			`bson:"_id,required"`
-	UserID uuid.UUID		`bson:"user_id,required"`
-	Firstname string 		`bson:"first_name,required"`
-	Lastname string			`bson:"last_name,required"`
-	Company string			`bson:"company,omitempty"`
-	Role string				`bson:"role,required"`
-	Logo string				`bson:"logo,required"`
-	Bio string				`bson:"bio,required"`
-	LinkedIn string			`bson:"linkedin,required"`
-	Website string			`bson:"website,omitempty"`
-	IsMember bool			`bson:"is_member,required"`
+	ID        uuid.UUID `bson:"_id,required" json:"ID"`
+	UserID    uuid.UUID `bson:"user_id,required" json:"UserID"`
+	Firstname string    `bson:"first_name,required" json:"Firstname"`
+	Lastname  string    `bson:"last_name,required" json:"Lastname"`
+	Company   string    `bson:"company,omitempty" json:"Company,omitempty"`
+	Role      string    `bson:"role,required" json:"Role"`
+	Logo      string    `bson:"logo,required" json:"Logo"`
+	Bio       string    `bson:"bio,required" json:"Bio"`
+	LinkedIn  string    `bson:"linkedin,required" json:"LinkedIn"`
+	Website   string    `bson:"website,omitempty" json:"Website,omitempty"`
+	IsMember  bool      `bson:"is_member,required" json:"IsMember"`
 }
 
 type CreateRecruiterPayload struct {
-	FirstName string 	`json:"firstName" validate:"required,alpha"`
-	LastName string		`json:"lastName"  validate:"required,alpha"`
-	Company string		`json:"company"  validate:"required"`
-	Role string			`json:"role"  validate:"required"`
-	Logo string			`json:"logo"  validate:"required"`
-	Bio string			`json:"bio"  validate:"required"`
-	LinkedIn string		`json:"linkedIn"  validate:"required,url"`
-	Website string		`json:"website,omitempty"  validate:"omitempty,url"`
+	FirstName string `json:"firstName" validate:"required,alpha"`
+	LastName  string `json:"lastName"  validate:"required,alpha"`
+	Company   string `json:"company"  validate:"required"`
+	Role      string `json:"role"  validate:"required"`
+	Logo      string `json:"logo"  validate:"required"`
+	Bio       string `json:"bio"  validate:"required"`
+	LinkedIn  string `json:"linkedIn"  validate:"required,url"`
+	Website   string `json:"website,omitempty"  validate:"omitempty,url"`
 }
 
 type UpdateRecruiterPayload struct {
-	FirstName string 	`bson:"first_name,omitempty" json:"firstName" validate:"omitempty,alpha"`
-	LastName string		`bson:"last_name,omitempty" json:"lastName"  validate:"omitempty,alpha"`
-	Company string 		`bson:"company,omitempty" json:"company"  validate:"omitempty"`
-	Bio string			`bson:"bio,omitempty" json:"bio" validate:"omitempty"`
-	Logo string			`bson:"logo,omitempty" json:"logo" validate:"omitempty"`
-	Role string			`bson:"role,omitempty" json:"role"  validate:"omitempty"`
-	Website string		`bson:"website,omitempty" json:"website,omitempty"  validate:"omitempty,url"`
+	FirstName string `bson:"first_name,omitempty" json:"firstName" validate:"omitempty,alpha"`
+	LastName  string `bson:"last_name,omitempty" json:"lastName"  validate:"omitempty,alpha"`
+	Company   string `bson:"company,omitempty" json:"company"  validate:"omitempty"`
+	Bio       string `bson:"bio,omitempty" json:"bio" validate:"omitempty"`
+	Logo      string `bson:"logo,omitempty" json:"logo" validate:"omitempty"`
+	Role      string `bson:"role,omitempty" json:"role"  validate:"omitempty"`
+	Website   string `bson:"website,omitempty" json:"website,omitempty"  validate:"omitempty,url"`
 }
 
 func (p *CreateRecruiterPayload) NewRecruiter(ctx context.Context) (*Recruiter, error) {
 	userID := ctx.Value("userID").(uuid.UUID)
 	userHash := md5.Sum([]byte(userID.String()))
-	recruiterID, err := uuid.FromBytes(userHash[:]);
+	recruiterID, err := uuid.FromBytes(userHash[:])
 	if err != nil {
 		return nil, internal.NewError(http.StatusInternalServerError, "recruiter.generate_id", "failed to generate id for new recruiter", err.Error())
 	}
 
-
-	 return &Recruiter{
-		ID: recruiterID,
-		UserID: userID,
+	return &Recruiter{
+		ID:        recruiterID,
+		UserID:    userID,
 		Firstname: p.FirstName,
-		Lastname: p.LastName,
-		Bio: p.Bio,
-		Logo: p.Logo,
-		Company: p.Company,
-		Role: p.Role,
-		Website: p.Website,
-		LinkedIn: p.LinkedIn,
-		IsMember: false,
+		Lastname:  p.LastName,
+		Bio:       p.Bio,
+		Logo:      p.Logo,
+		Company:   p.Company,
+		Role:      p.Role,
+		Website:   p.Website,
+		LinkedIn:  p.LinkedIn,
+		IsMember:  false,
 	}, nil
 }
 
@@ -85,7 +84,7 @@ func (u *UpdateRecruiterPayload) Validate(ctx context.Context, userID uuid.UUID,
 		return err
 	}
 
-	ok, err := u.checkUserOwnsRecruiter(ctx, userID, parsedRecruiterID )
+	ok, err := u.checkUserOwnsRecruiter(ctx, userID, parsedRecruiterID)
 	if err != nil {
 		return err
 	}
@@ -111,7 +110,7 @@ func (r *UpdateRecruiterPayload) checkUserOwnsRecruiter(ctx context.Context, use
 		return false, err
 	}
 
-	if recruiter.UserID != userID{
+	if recruiter.UserID != userID {
 		return false, nil
 	}
 

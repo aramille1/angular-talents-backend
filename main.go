@@ -49,6 +49,9 @@ func main() {
 	adminskiRouter.Handle("/recruiters", internal.EnhancedHandler(handlers.HandleRecruiterList)).Methods("GET")
 	adminskiRouter.Handle("/recruiters/{recruiterID}/status", internal.EnhancedHandler(handlers.HandleRecruiterUpdateStatus)).Methods("PATCH")
 
+	// Adminski routes for users
+	adminskiRouter.Handle("/users/{userID}/email", internal.EnhancedHandler(handlers.HandleGetUserEmail)).Methods("GET")
+
 	// Regular API routes
 	r.Handle("/health", internal.EnhancedHandler(handlers.HandleHealth)).Methods("GET")
 	r.Handle("/email", internal.EnhancedHandler(handlers.HandleEmail)).Methods("GET")

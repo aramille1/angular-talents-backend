@@ -16,142 +16,142 @@ import (
 )
 
 type PartialEngineer struct {
-	ID uuid.UUID 			`bson:"_id,required"`
-	UserID uuid.UUID		`bson:"user_id,required"`
-	Tagline string			`bson:"tagline,required"`
-	City string				`bson:"city,required"`
-	State string			`bson:"state,omitempty"`
-	Country string			`bson:"country,required"`
-	Avatar string			`bson:"avatar,required"`
-	Bio string				`bson:"bio,required"`
-	SearchStatus string		`bson:"search_status,required"`
-	RoleType []string		`bson:"role_type,required"`
-	RoleLevel []string		`bson:"role_level,required"`
+	ID           uuid.UUID `bson:"_id,required"`
+	UserID       uuid.UUID `bson:"user_id,required"`
+	Tagline      string    `bson:"tagline,required"`
+	City         string    `bson:"city,required"`
+	State        string    `bson:"state,omitempty"`
+	Country      string    `bson:"country,required"`
+	Avatar       string    `bson:"avatar,required"`
+	Bio          string    `bson:"bio,required"`
+	SearchStatus string    `bson:"search_status,required"`
+	RoleType     []string  `bson:"role_type,required"`
+	RoleLevel    []string  `bson:"role_level,required"`
 }
 
 type Engineer struct {
-	ID uuid.UUID 			`bson:"_id,required"`
-	UserID uuid.UUID		`bson:"user_id,required"`
-	Firstname string 		`bson:"first_name,required"`
-	Lastname string			`bson:"last_name,required"`
-	Tagline string			`bson:"tagline,required"`
-	City string				`bson:"city,required"`
-	State string			`bson:"state,omitempty"`
-	Country string			`bson:"country,required"`
-	Avatar string			`bson:"avatar,required"`
-	Bio string				`bson:"bio,required"`
-	SearchStatus string		`bson:"search_status,required"`
-	RoleType []string		`bson:"role_type,required"`
-	RoleLevel []string		`bson:"role_level,required"`
-	Website string			`bson:"website,omitempty"`
-	Github string			`bson:"github,required"`
-	Twitter string			`bson:"twitter,omitempty"`
-	LinkedIn string			`bson:"linkedin,required"`
-	StackOverflow string	`bson:"stackoverflow,omitempty"`
-	CreatedAt	time.Time 	`bson:"created_at,omitempty"`
+	ID            uuid.UUID `bson:"_id,required" json:"ID"`
+	UserID        uuid.UUID `bson:"user_id,required" json:"UserID"`
+	Firstname     string    `bson:"first_name,required" json:"Firstname"`
+	Lastname      string    `bson:"last_name,required" json:"Lastname"`
+	Tagline       string    `bson:"tagline,required" json:"Tagline"`
+	City          string    `bson:"city,required" json:"City"`
+	State         string    `bson:"state,omitempty" json:"State,omitempty"`
+	Country       string    `bson:"country,required" json:"Country"`
+	Avatar        string    `bson:"avatar,required" json:"Avatar"`
+	Bio           string    `bson:"bio,required" json:"Bio"`
+	SearchStatus  string    `bson:"search_status,required" json:"SearchStatus"`
+	RoleType      []string  `bson:"role_type,required" json:"RoleType"`
+	RoleLevel     []string  `bson:"role_level,required" json:"RoleLevel"`
+	Website       string    `bson:"website,omitempty" json:"Website,omitempty"`
+	Github        string    `bson:"github,required" json:"Github"`
+	Twitter       string    `bson:"twitter,omitempty" json:"Twitter,omitempty"`
+	LinkedIn      string    `bson:"linkedin,required" json:"LinkedIn"`
+	StackOverflow string    `bson:"stackoverflow,omitempty" json:"StackOverflow,omitempty"`
+	CreatedAt     time.Time `bson:"created_at,omitempty" json:"CreatedAt,omitempty"`
 }
 
 type CreateEngineerPayload struct {
-	FirstName string 	`json:"firstName" validate:"required"`
-	LastName string		`json:"lastName"  validate:"required"`
-	Tagline string		`json:"tagline"  validate:"required"`
-	City string			`json:"city"  validate:"required"`
-	State string		`json:"state,omitempty"`
-	Country string		`json:"country"  validate:"required"`
-	Avatar string		`json:"avatar"  validate:"required"`
-	Bio string			`json:"bio"  validate:"required"`
-	SearchStatus string	`json:"searchStatus"  validate:"required,oneof=actively_looking open not_interested invisible"`
-	RoleType []string	`json:"roleType"  validate:"required,dive,oneof=contract_part_time contract_full_time employee_part_time employee_full_time"`
-	RoleLevel []string	`json:"roleLevel"  validate:"required,dive,oneof=junior mid_level senior principal_staff c_level"`
-	Website string		`json:"website,omitempty"  validate:"omitempty,url"`
-	Github string		`json:"github"  validate:"required,url"`
-	Twitter string		`json:"twitter,omitempty"  validate:"omitempty,url"`
-	LinkedIn string		`json:"linkedIn"  validate:"required,url"`
-	StackOverflow string`json:"stackOverflow,omitempty"  validate:"omitempty,url"`
+	FirstName     string   `json:"firstName" validate:"required"`
+	LastName      string   `json:"lastName"  validate:"required"`
+	Tagline       string   `json:"tagline"  validate:"required"`
+	City          string   `json:"city"  validate:"required"`
+	State         string   `json:"state,omitempty"`
+	Country       string   `json:"country"  validate:"required"`
+	Avatar        string   `json:"avatar"  validate:"required"`
+	Bio           string   `json:"bio"  validate:"required"`
+	SearchStatus  string   `json:"searchStatus"  validate:"required,oneof=actively_looking open not_interested invisible"`
+	RoleType      []string `json:"roleType"  validate:"required,dive,oneof=contract_part_time contract_full_time employee_part_time employee_full_time"`
+	RoleLevel     []string `json:"roleLevel"  validate:"required,dive,oneof=junior mid_level senior principal_staff c_level"`
+	Website       string   `json:"website,omitempty"  validate:"omitempty,url"`
+	Github        string   `json:"github"  validate:"required,url"`
+	Twitter       string   `json:"twitter,omitempty"  validate:"omitempty,url"`
+	LinkedIn      string   `json:"linkedIn"  validate:"required,url"`
+	StackOverflow string   `json:"stackOverflow,omitempty"  validate:"omitempty,url"`
 }
 
 type UpdateEngineerPayload struct {
-	FirstName string 	`bson:"first_name,omitempty" json:"firstName" validate:"omitempty,alpha"`
-	LastName string		`bson:"last_name,omitempty" json:"lastName"  validate:"omitempty,alpha"`
-	Tagline string		`bson:"tagline,omitempty" json:"tagline"  validate:"omitempty"`
-	City string			`bson:"city,omitempty" json:"city"  validate:"omitempty"`
-	State string		`bson:"state,omitempty" json:"state,omitempty" validate:"omitempty"`
-	Country string		`bson:"country,omitempty" json:"country"  validate:"omitempty"`
-	Avatar string		`bson:"avatar,omitempty" json:"avatar"  validate:"omitempty"`
-	Bio string			`bson:"bio,omitempty" json:"bio" validate:"omitempty"`
-	SearchStatus string	`bson:"search_status,omitempty" json:"searchStatus"  validate:"omitempty,oneof=actively_looking open not_interested invisible"`
-	RoleType []string	`bson:"role_type,omitempty" json:"roleType"  validate:"omitempty,dive,oneof=contract_part_time contract_full_time employee_part_time employee_full_time"`
-	RoleLevel []string	`bson:"role_level,omitempty" json:"roleLevel"  validate:"omitempty,dive,oneof=junior mid_level senior principal_staff c_level"`
-	Website string		`bson:"website,omitempty" json:"website,omitempty"  validate:"omitempty,url"`
-	Twitter string		`bson:"twitter,omitempty" json:"twitter,omitempty"  validate:"omitempty,url"`
-	StackOverflow string`bson:"stackoverflow,omitempty" json:"stackOverflow,omitempty"  validate:"omitempty,url"`
+	FirstName     string   `bson:"first_name,omitempty" json:"firstName" validate:"omitempty,alpha"`
+	LastName      string   `bson:"last_name,omitempty" json:"lastName"  validate:"omitempty,alpha"`
+	Tagline       string   `bson:"tagline,omitempty" json:"tagline"  validate:"omitempty"`
+	City          string   `bson:"city,omitempty" json:"city"  validate:"omitempty"`
+	State         string   `bson:"state,omitempty" json:"state,omitempty" validate:"omitempty"`
+	Country       string   `bson:"country,omitempty" json:"country"  validate:"omitempty"`
+	Avatar        string   `bson:"avatar,omitempty" json:"avatar"  validate:"omitempty"`
+	Bio           string   `bson:"bio,omitempty" json:"bio" validate:"omitempty"`
+	SearchStatus  string   `bson:"search_status,omitempty" json:"searchStatus"  validate:"omitempty,oneof=actively_looking open not_interested invisible"`
+	RoleType      []string `bson:"role_type,omitempty" json:"roleType"  validate:"omitempty,dive,oneof=contract_part_time contract_full_time employee_part_time employee_full_time"`
+	RoleLevel     []string `bson:"role_level,omitempty" json:"roleLevel"  validate:"omitempty,dive,oneof=junior mid_level senior principal_staff c_level"`
+	Website       string   `bson:"website,omitempty" json:"website,omitempty"  validate:"omitempty,url"`
+	Twitter       string   `bson:"twitter,omitempty" json:"twitter,omitempty"  validate:"omitempty,url"`
+	StackOverflow string   `bson:"stackoverflow,omitempty" json:"stackOverflow,omitempty"  validate:"omitempty,url"`
 }
 
 type ReadEngineerPayload struct {
-	EngineerID string 	`json:"engineerId" validate:"required,min=36"`
+	EngineerID string `json:"engineerId" validate:"required,min=36"`
 }
 
 type ListEngineersPagination struct {
-	Page int64 		`json:"page" bson:"page"`
-	Limit int64 	`json:"limit" bson:"limit"`
+	Page  int64 `json:"page" bson:"page"`
+	Limit int64 `json:"limit" bson:"limit"`
 }
 
 type ListEngineersFilter struct {
-	Country string 		`json:"country"  bson:"country,omitempty"`
+	Country      string `json:"country"  bson:"country,omitempty"`
 	SearchStatus string `json:"searchStatus" bson:"search_status,omitempty"`
-	RoleLevel string 	`json:"roleLevel" bson:"role_level,omitempty"`
-	RoleType string 	`json:"roleType" bson:"role_type,omitempty"`
+	RoleLevel    string `json:"roleLevel" bson:"role_level,omitempty"`
+	RoleType     string `json:"roleType" bson:"role_type,omitempty"`
 }
 
 type ListEngineersParams struct {
 	Pagination *ListEngineersPagination
-	Filter *ListEngineersFilter
+	Filter     *ListEngineersFilter
 }
 
-func (e *Engineer) NewPartialEngineer() (*PartialEngineer) {
+func (e *Engineer) NewPartialEngineer() *PartialEngineer {
 	return &PartialEngineer{
-		ID: e.ID,
-		UserID: e.UserID,
-		Tagline: e.Tagline,
-		City: e.City,
-		State: e.State,
-		Country: e.Country,
-		Avatar: e.Avatar,
-		Bio: e.Bio,
+		ID:           e.ID,
+		UserID:       e.UserID,
+		Tagline:      e.Tagline,
+		City:         e.City,
+		State:        e.State,
+		Country:      e.Country,
+		Avatar:       e.Avatar,
+		Bio:          e.Bio,
 		SearchStatus: e.SearchStatus,
-		RoleType: e.RoleType,
-		RoleLevel: e.RoleLevel,
+		RoleType:     e.RoleType,
+		RoleLevel:    e.RoleLevel,
 	}
 }
 
 func (p *CreateEngineerPayload) NewEngineer(ctx context.Context) (*Engineer, error) {
 	userID := ctx.Value("userID").(uuid.UUID)
 	userHash := md5.Sum([]byte(userID.String()))
-	engineerID, err := uuid.FromBytes(userHash[:]);
+	engineerID, err := uuid.FromBytes(userHash[:])
 	if err != nil {
 		return nil, err
 	}
 
-	 return &Engineer{
-		ID: engineerID,
-		UserID: userID,
-		Firstname: p.FirstName,
-		Lastname: p.LastName,
-		Tagline: p.Tagline,
-		City: p.City,
-		State: p.State,
-		Country: p.Country,
-		Avatar: p.Avatar,
-		Bio: p.Bio,
-		SearchStatus: p.SearchStatus,
-		RoleType: p.RoleType,
-		RoleLevel: p.RoleLevel,
-		Website: p.Website,
-		Github: p.Github,
-		Twitter: p.Twitter,
-		LinkedIn: p.LinkedIn,
+	return &Engineer{
+		ID:            engineerID,
+		UserID:        userID,
+		Firstname:     p.FirstName,
+		Lastname:      p.LastName,
+		Tagline:       p.Tagline,
+		City:          p.City,
+		State:         p.State,
+		Country:       p.Country,
+		Avatar:        p.Avatar,
+		Bio:           p.Bio,
+		SearchStatus:  p.SearchStatus,
+		RoleType:      p.RoleType,
+		RoleLevel:     p.RoleLevel,
+		Website:       p.Website,
+		Github:        p.Github,
+		Twitter:       p.Twitter,
+		LinkedIn:      p.LinkedIn,
 		StackOverflow: p.StackOverflow,
-		CreatedAt: time.Now(),
+		CreatedAt:     time.Now(),
 	}, nil
 }
 
@@ -167,7 +167,7 @@ func (u *UpdateEngineerPayload) Validate(ctx context.Context, userID uuid.UUID, 
 		return err
 	}
 
-	ok, err := u.checkUserOwnsEngineer(ctx, userID, parsedEngineerID )
+	ok, err := u.checkUserOwnsEngineer(ctx, userID, parsedEngineerID)
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ func (e *UpdateEngineerPayload) checkUserOwnsEngineer(ctx context.Context, userI
 		return false, err
 	}
 
-	if engineer.UserID != userID{
+	if engineer.UserID != userID {
 		return false, nil
 	}
 
@@ -203,10 +203,10 @@ func (e *UpdateEngineerPayload) checkUserOwnsEngineer(ctx context.Context, userI
 func NewListEngineerParams(isMember bool, q url.Values) (*ListEngineersParams, error) {
 	params := &ListEngineersParams{
 		Pagination: &ListEngineersPagination{
-			Page: 1,
+			Page:  1,
 			Limit: 10,
 		},
-		Filter:  &ListEngineersFilter{},
+		Filter: &ListEngineersFilter{},
 	}
 
 	if !isMember {
