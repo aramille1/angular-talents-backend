@@ -17,11 +17,12 @@ import (
 )
 
 type User struct {
-	ID               uuid.UUID `bson:"_id,required"`
-	Email            string    `bson:"email,required"`
-	Password         string    `bson:"password,required"`
-	Verified         bool      `bson:"verified,omitempty"`
-	VerificationCode int       `bson:"verificationCode,omitempty"`
+	ID               uuid.UUID `bson:"_id,required" json:"ID"`
+	Email            string    `bson:"email,required" json:"Email"`
+	Password         string    `bson:"password,required" json:"-"` // Don't expose password in JSON
+	Verified         bool      `bson:"verified,omitempty" json:"Verified"`
+	VerificationCode int       `bson:"verificationCode,omitempty" json:"-"` // Don't expose verification code in JSON
+	CreatedAt        time.Time `bson:"created_at,omitempty" json:"CreatedAt"`
 }
 
 type BodyData struct {
@@ -51,6 +52,7 @@ func (d *SignUpData) NewUser() (*User, error) {
 		Email:            d.Email,
 		Verified:         false,
 		VerificationCode: rand.Intn(10000000),
+		CreatedAt:        time.Now(),
 	}
 
 	err := newUser.generateID()

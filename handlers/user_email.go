@@ -51,7 +51,16 @@ func HandleGetUserEmail(w internal.EnhancedResponseWriter, r *internal.EnhancedR
 		)
 	}
 
-	// Return just the email
-	w.WriteResponse(http.StatusOK, map[string]string{"email": user.Email})
+	// Return email and created_at
+	response := map[string]interface{}{
+		"email": user.Email,
+	}
+
+	// Only include createdAt if it's set
+	if !user.CreatedAt.IsZero() {
+		response["createdAt"] = user.CreatedAt
+	}
+
+	w.WriteResponse(http.StatusOK, response)
 	return nil
 }
