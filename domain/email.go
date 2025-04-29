@@ -14,7 +14,7 @@ func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 	mailTrapToken := os.Getenv("MAILTRAP_TOKEN")
 	requestBody := map[string]interface{}{
 		"from": map[string]string{
-			"email": "hello@angulartalents.com",
+			"email": "hello.angulartalents@gmail.com",
 			"name":  "The Angular Team",
 		},
 		"to": []interface{}{
@@ -73,7 +73,7 @@ func SendRecruiterApprovalEmail(recruiterID, firstName, lastName, company, recei
 
 	requestBody := map[string]interface{}{
 		"from": map[string]string{
-			"email": "hello@angulartalents.com",
+			"email": "hello.angulartalents@gmail.com",
 			"name":  "Angular Talents",
 		},
 		"to": []interface{}{
@@ -136,7 +136,7 @@ func sendFallbackApprovalEmail(receiverEmail, firstName, company string) error {
 	// Build the request body for a simple email without a template
 	requestBody := map[string]interface{}{
 		"from": map[string]string{
-			"email": "hello@angulartalents.com",
+			"email": "hello.angulartalents@gmail.com",
 			"name":  "Angular Talents",
 		},
 		"to": []interface{}{

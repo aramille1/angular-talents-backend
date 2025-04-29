@@ -22,7 +22,7 @@ func HandleEmail(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest)
 
 	requestBody := map[string]interface{}{
 		"from": map[string]string{
-			"email": "hello@angulartalents.com",
+			"email": "hello.angulartalents@gmail.com",
 			"name":  "Mailtrap Test",
 		},
 		"to": []interface{}{
