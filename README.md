@@ -78,33 +78,24 @@ go run .
 
 ## Email Configuration
 
-### Hybrid Approach with Mailtrap Templates and SMTP (Recommended)
-The application now uses a hybrid approach for sending emails:
-1. It first fetches your custom template from Mailtrap's Template API
-2. Then sends the rendered template via SMTP for reliable delivery
+### SMTP Configuration (Recommended)
+The application now supports email sending via SMTP, which is more reliable than the API method.
 
 Add the following to your `.env` file:
 ```
-# SMTP Configuration
 SMTP_HOST=live.smtp.mailtrap.io
 SMTP_PORT=587
 SMTP_USER=your_mailtrap_username
 SMTP_PASSWORD=your_mailtrap_password
-
-# Template Configuration
-MAILTRAP_TOKEN=your_mailtrap_api_token
-VERIFICATION_TEMPLATE_ID=your_mailtrap_template_id
-RECRUITER_APPROVAL_TEMPLATE_ID=your_mailtrap_recruiter_approval_template_id
 ```
 
 For Mailtrap specifically:
 1. Log in to your Mailtrap account
 2. Go to Email Testing > Inboxes > Select your inbox
-3. Click on "SMTP Settings" to get your SMTP credentials
-4. Go to "Templates" to create or find your template IDs
-5. Get your API token from your Mailtrap account settings
+3. Click on "SMTP Settings"
+4. Copy the credentials for the "Nodemailer" integration
 
-### Testing Configuration
+### Testing SMTP Configuration
 A test script is included to verify your SMTP configuration:
 
 ```bash
@@ -112,13 +103,19 @@ A test script is included to verify your SMTP configuration:
 ```
 
 This script will:
-1. Load your SMTP and template configuration from `.env`
+1. Load your SMTP configuration from `.env`
 2. Prompt for a test email address
 3. Send a test email using your SMTP settings
 4. Provide feedback on the success or failure of the email sending
 
-### Fallback Behavior
-If your Mailtrap template cannot be fetched for any reason, the application will automatically fall back to built-in email templates to ensure emails can still be sent.
+### Legacy API Configuration
+The application still supports the Mailtrap API method as a fallback. If you prefer to use this method, set the following in your `.env` file:
+
+```
+MAILTRAP_TOKEN=your_mailtrap_api_token
+VERIFICATION_TEMPLATE_ID=your_mailtrap_template_id
+RECRUITER_APPROVAL_TEMPLATE_ID=your_mailtrap_recruiter_approval_template_id
+```
 
 ## Running the Application
 
