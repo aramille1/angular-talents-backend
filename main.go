@@ -51,6 +51,7 @@ func main() {
 
 	// Adminski routes for users
 	adminskiRouter.Handle("/users/{userID}/email", internal.EnhancedHandler(handlers.HandleGetUserEmail)).Methods("GET")
+	adminskiRouter.Handle("/users/{userID}/verify", internal.EnhancedHandler(handlers.HandleManualUserVerify)).Methods("POST")
 
 	// Regular API routes
 	r.Handle("/health", internal.EnhancedHandler(handlers.HandleHealth)).Methods("GET")

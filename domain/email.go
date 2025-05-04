@@ -12,6 +12,13 @@ import (
 func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 	internal.LogInfo("Starting sending sign up confirmation email", map[string]interface{}{"user_id": userId})
 	mailTrapToken := os.Getenv("MAILTRAP_TOKEN")
+
+	// Check if Mailtrap is configured
+	if mailTrapToken == "" || templateId == "" {
+		internal.LogInfo("Mailtrap not configured, using fallback email verification method", nil)
+		return logVerificationInstructions(userId, receiverEmail, code)
+	}
+
 	requestBody := map[string]interface{}{
 		"from": map[string]string{
 			"email": "hello.angulartalents@gmail.com",
@@ -32,12 +39,14 @@ func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 
 	marshalledRequestBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return err
+		internal.LogInfo("Failed to marshal Mailtrap request body, using fallback", nil)
+		return logVerificationInstructions(userId, receiverEmail, code)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(marshalledRequestBody))
 	if err != nil {
-		return err
+		internal.LogInfo("Failed to create Mailtrap request, using fallback", nil)
+		return logVerificationInstructions(userId, receiverEmail, code)
 	}
 
 	req.Header.Add("Authorization", "Bearer "+mailTrapToken)
@@ -45,17 +54,49 @@ func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		internal.LogInfo("Failed to send request to Mailtrap, using fallback", nil)
+		return logVerificationInstructions(userId, receiverEmail, code)
 	}
 
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		err := internal.NewError(http.StatusInternalServerError, "email.send", "request to mailtrap api failed", "failed to send email")
 		internal.LogError(err, internal.ReturnRawData(resp))
-		return err
+		// Use fallback method
+		internal.LogInfo("Mailtrap API returned error, using fallback", map[string]interface{}{"status": resp.StatusCode})
+		return logVerificationInstructions(userId, receiverEmail, code)
 	}
 
 	internal.LogInfo("Successfully sent sign up confirmation email", map[string]interface{}{"user_id": userId})
+	return nil
+}
+
+// logVerificationInstructions logs verification instructions for admin to manually verify users
+// This is a fallback method when email sending fails
+func logVerificationInstructions(userId, email string, code int) error {
+	verificationLink := fmt.Sprintf("%s/verify-email/%s/%d", os.Getenv("FRONTEND_URL"), userId, code)
+
+	instruction := fmt.Sprintf(`
+======================= MANUAL VERIFICATION REQUIRED =======================
+User %s (%s) could not receive verification email.
+Please provide them with this verification link manually:
+%s
+==========================================================================
+`, email, userId, verificationLink)
+
+	internal.LogInfo("Manual verification required", map[string]interface{}{
+		"user_id":           userId,
+		"email":             email,
+		"verification_link": verificationLink,
+	})
+
+	// Create a "fallback" notification in Slack
+	if os.Getenv("SLACK_WEBHOOK_URL") != "" {
+		go internal.NotifyEmailFailure(email, userId, verificationLink)
+	}
+
+	fmt.Println(instruction)
+
 	return nil
 }
 

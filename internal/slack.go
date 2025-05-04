@@ -181,3 +181,44 @@ func NotifyNewRecruiterProfile(firstName, lastName, company string, recruiterID 
 		})
 	}
 }
+
+// NotifyEmailFailure sends a notification to Slack when email verification fails
+func NotifyEmailFailure(email, userID, verificationLink string) {
+	webhookURL := os.Getenv("SLACK_WEBHOOK_URL")
+
+	message := SlackWebhookMessage{
+		Attachments: []SlackAttachment{
+			{
+				Color:     "#FF9800", // Orange for warning
+				Title:     "⚠️ Email Verification Failed",
+				Text:      "A user registration succeeded but the verification email could not be sent",
+				Timestamp: time.Now().Unix(),
+				Fields: []SlackField{
+					{
+						Title: "Email",
+						Value: email,
+						Short: true,
+					},
+					{
+						Title: "User ID",
+						Value: userID,
+						Short: true,
+					},
+					{
+						Title: "Verification Link",
+						Value: verificationLink,
+						Short: false,
+					},
+				},
+				Footer: "Angular Talents - ADMIN ACTION REQUIRED",
+			},
+		},
+	}
+
+	if err := SendSlackNotification(webhookURL, message); err != nil {
+		LogInfo("Failed to send Slack notification for email failure", map[string]interface{}{
+			"error": err.Error(),
+			"email": email,
+		})
+	}
+}
