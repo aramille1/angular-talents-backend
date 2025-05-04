@@ -46,25 +46,16 @@ func HandleSignUp(w internal.EnhancedResponseWriter, r *internal.EnhancedRequest
 		return internal.NewError(http.StatusInternalServerError, "signup.insert_user", "failed to sign up", err.Error())
 	}
 
-	// Send Slack notification (non-blocking)
-	go internal.NotifyNewUserRegistration(user.Email, user.ID.String())
-
-	// Try to send the verification email, but don't fail the registration if it fails
 	err = domain.SendNewEmail(confirmEmailTemplateId, userId, user.Email, user.VerificationCode)
 	if err != nil {
-		internal.LogError(
-			internal.NewError(http.StatusInternalServerError, "signup.send_confirmation_email", "request to mailtrap api failed", err.Error()),
-			map[string]interface{}{"user_id": user.ID, "email": user.Email},
-		)
-
-		// Still return a specific error about the email sending failure, but with a 201 Created status
-		// to indicate the account was created but we couldn't send the verification email
-		w.WriteResponse(http.StatusCreated, map[string]domain.User{"user": *user})
-
-		return internal.NewError(http.StatusInternalServerError, "signup.send_confirmation_email", "failed to sign up", "request to mailtrap api failed")
+		return internal.NewError(http.StatusInternalServerError, "signup.send_confirmation_email", "failed to sign up", err.Error())
 	}
 
 	internal.LogInfo("Successfully signed up user", map[string]interface{}{"user_id": user.ID})
+
+	// Send Slack notification (non-blocking)
+	go internal.NotifyNewUserRegistration(user.Email, user.ID.String())
+
 	w.WriteResponse(http.StatusOK, map[string]domain.User{"user": *user})
 	return nil
 }
