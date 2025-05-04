@@ -49,7 +49,7 @@ func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 	verificationLink := fmt.Sprintf("%s/verify/%s/%d", frontendURL, userId, code)
 
 	// Set up email data
-	from := "hello.angulartalents@gmail.com"
+	from := "hello@angular-talents.mailtrap.io"
 	to := []string{receiverEmail}
 
 	// Create email headers
@@ -167,7 +167,7 @@ func SendRecruiterApprovalEmail(recruiterID, firstName, lastName, company, recei
 	loginURL := fmt.Sprintf("%s/login", frontendURL)
 
 	// Set up email data
-	from := "hello.angulartalents@gmail.com"
+	from := "hello@angular-talents.mailtrap.io"
 	to := []string{receiverEmail}
 
 	// Create email headers

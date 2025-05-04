@@ -51,7 +51,7 @@ fi
 # Create a temporary file with the email content
 TEMP_EMAIL=$(mktemp)
 cat > $TEMP_EMAIL << EOF
-From: Angular Talents <hello.angulartalents@gmail.com>
+From: Angular Talents <hello@angular-talents.mailtrap.io>
 To: $TEST_EMAIL
 Subject: SMTP Test Email
 MIME-Version: 1.0
@@ -109,7 +109,7 @@ EHLO localhost
 AUTH LOGIN
 $(echo -n $SMTP_USER | base64)
 $(echo -n $SMTP_PASSWORD | base64)
-MAIL FROM: <hello.angulartalents@gmail.com>
+MAIL FROM: <hello@angular-talents.mailtrap.io>
 RCPT TO: <$TEST_EMAIL>
 DATA
 $(cat $TEMP_EMAIL)
