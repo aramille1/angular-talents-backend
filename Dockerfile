@@ -26,6 +26,12 @@ COPY --from=builder /app/main .
 # Set environment variables
 ENV PORT=8080
 
+# Email configuration
+ENV SMTP_HOST=live.smtp.mailtrap.io
+ENV SMTP_PORT=587
+ENV SMTP_USER=api
+# Note: SMTP_PASSWORD should be provided at runtime
+
 # Expose the port the app runs on
 EXPOSE 8080
 
