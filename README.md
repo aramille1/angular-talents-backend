@@ -79,7 +79,7 @@ go run .
 ## Email Configuration
 
 ### SMTP Configuration (Recommended)
-The application now supports email sending via SMTP, which is more reliable than the API method.
+The application supports email sending via SMTP, which is reliable and widely supported.
 
 Add the following to your `.env` file:
 ```
@@ -94,6 +94,24 @@ For Mailtrap specifically:
 2. Go to Email Testing > Inboxes > Select your inbox
 3. Click on "SMTP Settings"
 4. Copy the credentials for the "Nodemailer" integration
+
+### Mailtrap Templates (Alternative)
+The application also supports using Mailtrap templates for more customizable emails.
+
+To use templates, add the following to your `.env` file:
+```
+MAILTRAP_TOKEN=your_mailtrap_api_token
+CONFIRM_EMAIL_TEMPLATE_ID=your_mailtrap_template_id
+RECRUITER_APPROVAL_TEMPLATE_ID=your_mailtrap_approval_template_id
+```
+
+For setting up templates:
+1. Go to Mailtrap > Email Templates
+2. Create templates for verification emails and recruiter approval emails
+3. In each template, use variables like `{{verification_link}}`, `{{first_name}}`, etc.
+4. Copy the template IDs to your `.env` file
+
+The system will automatically use templates when they're configured, falling back to SMTP with embedded HTML when they're not.
 
 ### Testing SMTP Configuration
 A test script is included to verify your SMTP configuration:

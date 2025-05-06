@@ -1,16 +1,136 @@
 package domain
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"net/smtp"
 	"os"
 	"reverse-job-board/internal"
 )
 
-// SendNewEmail sends a verification email using SMTP
+// SendNewEmail sends a verification email using either template ID (API) or SMTP
 func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 	internal.LogInfo("Starting sending sign up confirmation email", map[string]interface{}{"user_id": userId})
+
+	// Try to get template ID from environment if not provided
+	if templateId == "" {
+		templateId = os.Getenv("CONFIRM_EMAIL_TEMPLATE_ID")
+	}
+
+	// If we have a valid template ID, use Mailtrap API method
+	if templateId != "" && templateId != "your_mailtrap_template_id" {
+		return sendEmailWithTemplate(templateId, userId, receiverEmail, code)
+	}
+
+	// Otherwise fall back to SMTP method
+	return sendEmailWithSMTP(userId, receiverEmail, code)
+}
+
+// sendEmailWithTemplate sends an email using Mailtrap API with template
+func sendEmailWithTemplate(templateId, userId, receiverEmail string, code int) error {
+	internal.LogInfo("Using Mailtrap template for verification email",
+		map[string]interface{}{
+			"template_id": templateId,
+			"user_id":     userId,
+		})
+
+	mailTrapToken := os.Getenv("MAILTRAP_TOKEN")
+	if mailTrapToken == "" || mailTrapToken == "your_mailtrap_api_token" {
+		internal.LogInfo("Mailtrap token not set or using default value", nil)
+		return errors.New("mailtrap token not configured properly")
+	}
+
+	// Set up frontend URL for the verification link
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:4200"
+	}
+	verificationLink := fmt.Sprintf("%s/verify/%s/%d", frontendURL, userId, code)
+
+	// Build the request payload
+	requestBody := map[string]interface{}{
+		"from": map[string]string{
+			"email": "hello@angulartalents.com",
+			"name":  "Angular Talents",
+		},
+		"to": []interface{}{
+			map[string]string{"email": receiverEmail},
+		},
+		"template_uuid": templateId,
+		"template_variables": map[string]string{
+			"user_id":           userId,
+			"verification_code": fmt.Sprint(code),
+			"verification_link": verificationLink,
+		},
+	}
+
+	client := &http.Client{}
+	url := "https://send.api.mailtrap.io/api/send"
+
+	internal.LogInfo("Preparing Mailtrap API request", map[string]interface{}{
+		"api_url":   url,
+		"recipient": receiverEmail,
+	})
+
+	marshalledRequestBody, err := json.Marshal(requestBody)
+	if err != nil {
+		internal.LogInfo("Failed to marshal request body", map[string]interface{}{"error": err.Error()})
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(marshalledRequestBody))
+	if err != nil {
+		internal.LogInfo("Failed to create HTTP request", map[string]interface{}{"error": err.Error()})
+		return err
+	}
+
+	req.Header.Add("Authorization", "Bearer "+mailTrapToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	internal.LogInfo("Sending request to Mailtrap API", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		internal.LogInfo("Failed to send HTTP request", map[string]interface{}{"error": err.Error()})
+		return err
+	}
+
+	defer resp.Body.Close()
+	internal.LogInfo("Received response from Mailtrap API", map[string]interface{}{
+		"status_code": resp.StatusCode,
+		"status":      resp.Status,
+	})
+
+	if resp.StatusCode != http.StatusOK {
+		// Read and log response body for debugging
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		internal.LogInfo("Mailtrap API error response", map[string]interface{}{
+			"response_body": bodyString,
+		})
+
+		// Create a new buffer with the same content for ReturnRawData
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		err := internal.NewError(http.StatusInternalServerError, "email.send", "request to mailtrap api failed", "failed to send email")
+		internal.LogError(err, internal.ReturnRawData(resp))
+		return err
+	}
+
+	internal.LogInfo("Successfully sent sign up confirmation email using template",
+		map[string]interface{}{
+			"user_id":     userId,
+			"template_id": templateId,
+		})
+	return nil
+}
+
+// sendEmailWithSMTP sends a verification email using SMTP
+func sendEmailWithSMTP(userId, receiverEmail string, code int) error {
+	internal.LogInfo("Using SMTP for verification email", map[string]interface{}{"user_id": userId})
 
 	// Get SMTP credentials from environment
 	smtpHost := os.Getenv("SMTP_HOST")
@@ -130,6 +250,117 @@ func SendNewEmail(templateId, userId, receiverEmail string, code int) error {
 // SendRecruiterApprovalEmail sends an email to a recruiter when their profile is approved
 func SendRecruiterApprovalEmail(recruiterID, firstName, lastName, company, receiverEmail string) error {
 	internal.LogInfo("Starting to send recruiter approval email", map[string]interface{}{"recruiter_id": recruiterID})
+
+	// Try to get approval template ID from environment
+	approvalTemplateID := os.Getenv("RECRUITER_APPROVAL_TEMPLATE_ID")
+
+	// If we have a valid template ID, use Mailtrap API method
+	if approvalTemplateID != "" && approvalTemplateID != "your_mailtrap_approval_template_id" {
+		return sendRecruiterApprovalWithTemplate(approvalTemplateID, recruiterID, firstName, lastName, company, receiverEmail)
+	}
+
+	// Otherwise fall back to SMTP method
+	return sendRecruiterApprovalWithSMTP(recruiterID, firstName, company, receiverEmail)
+}
+
+// sendRecruiterApprovalWithTemplate sends an approval email using Mailtrap API with template
+func sendRecruiterApprovalWithTemplate(templateId, recruiterID, firstName, lastName, company, receiverEmail string) error {
+	internal.LogInfo("Using Mailtrap template for recruiter approval email",
+		map[string]interface{}{
+			"template_id":  templateId,
+			"recruiter_id": recruiterID,
+		})
+
+	mailTrapToken := os.Getenv("MAILTRAP_TOKEN")
+	if mailTrapToken == "" || mailTrapToken == "your_mailtrap_api_token" {
+		internal.LogInfo("Mailtrap token not set or using default value", nil)
+		return errors.New("mailtrap token not configured properly")
+	}
+
+	// Set up frontend URL for the login link
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:4200"
+	}
+	loginURL := fmt.Sprintf("%s/login", frontendURL)
+
+	// Build the request payload
+	requestBody := map[string]interface{}{
+		"from": map[string]string{
+			"email": "hello@angulartalents.com",
+			"name":  "Angular Talents",
+		},
+		"to": []interface{}{
+			map[string]string{"email": receiverEmail},
+		},
+		"template_uuid": templateId,
+		"template_variables": map[string]string{
+			"first_name":   firstName,
+			"last_name":    lastName,
+			"company":      company,
+			"login_url":    loginURL,
+			"recruiter_id": recruiterID,
+		},
+	}
+
+	client := &http.Client{}
+	url := "https://send.api.mailtrap.io/api/send"
+
+	marshalledRequestBody, err := json.Marshal(requestBody)
+	if err != nil {
+		internal.LogInfo("Failed to marshal request body", map[string]interface{}{"error": err.Error()})
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(marshalledRequestBody))
+	if err != nil {
+		internal.LogInfo("Failed to create HTTP request", map[string]interface{}{"error": err.Error()})
+		return err
+	}
+
+	req.Header.Add("Authorization", "Bearer "+mailTrapToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	internal.LogInfo("Sending request to Mailtrap API", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		internal.LogInfo("Failed to send HTTP request", map[string]interface{}{"error": err.Error()})
+		return err
+	}
+
+	defer resp.Body.Close()
+	internal.LogInfo("Received response from Mailtrap API", map[string]interface{}{
+		"status_code": resp.StatusCode,
+		"status":      resp.Status,
+	})
+
+	if resp.StatusCode != http.StatusOK {
+		// Read and log response body for debugging
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		internal.LogInfo("Mailtrap API error response", map[string]interface{}{
+			"response_body": bodyString,
+		})
+
+		// Create a new buffer with the same content for ReturnRawData
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		err := internal.NewError(http.StatusInternalServerError, "email.send_approval", "request to mailtrap api failed", "failed to send approval email")
+		internal.LogError(err, internal.ReturnRawData(resp))
+		return err
+	}
+
+	internal.LogInfo("Successfully sent recruiter approval email using template",
+		map[string]interface{}{
+			"recruiter_id": recruiterID,
+			"template_id":  templateId,
+		})
+	return nil
+}
+
+// sendRecruiterApprovalWithSMTP sends an approval email using SMTP
+func sendRecruiterApprovalWithSMTP(recruiterID, firstName, company, receiverEmail string) error {
+	internal.LogInfo("Using SMTP for recruiter approval email", map[string]interface{}{"recruiter_id": recruiterID})
 
 	// Get SMTP credentials from environment
 	smtpHost := os.Getenv("SMTP_HOST")
