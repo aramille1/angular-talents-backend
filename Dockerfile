@@ -23,8 +23,12 @@ RUN apk --no-cache add ca-certificates
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
 
+# Copy Angular SSR files
+COPY angular-dist/ /app/angular-dist/
+
 # Set environment variables
 ENV PORT=8080
+ENV STATIC_DIR=/app/angular-dist
 
 # Email configuration
 ENV SMTP_HOST=live.smtp.mailtrap.io
